@@ -107,6 +107,7 @@ class Model:
     #Exclui carta selecionada na minha lista
     def excluir_carta(self, id_carta):
         conn = sqlite3.connect(self.db_path)
+        conn.execute("PRAGMA foreign_keys = ON") #Ativa suporte a FK para excluir em cascata
         cursor = conn.cursor()
 
         # Primeiro remove da tabela relacional
