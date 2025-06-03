@@ -1,6 +1,6 @@
 from MTG_Model import Model
 from MTG_Controller import Controller
-from MTG_View import View
+from MTG_view import View
 
 def main():
     model = Model()

@@ -115,3 +115,112 @@ class Model:
 
         conn.commit()
         conn.close()
+
+
+    def buscar_cartas_por_cores(self, cores_desejadas):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        if not cores_desejadas:
+            # se nenhuma cor foi selecionada retorna todas as cores
+            cursor.execute('''
+            SELECT Cartas.id_carta, Cartas.nome, Cartas.tipo, Cartas.custo, Cartas.quantidade,
+                GROUP_CONCAT(Cores.nome, ', ') as cores
+            FROM Cartas
+            LEFT JOIN cartas_cores ON Cartas.id_carta = cartas_cores.id_carta
+            LEFT JOIN Cores ON cartas_cores.id_cor = Cores.id_cor
+            GROUP BY Cartas.id_carta
+            ''')
+            resultados = cursor.fetchall()
+        else:
+            #monta o fultro para filtrar cartas que tenha todas as cores selecionadas
+            num_cores = len(cores_desejadas)
+            placeholders = ','.join('?' for _ in cores_desejadas)
+            # Consulta que:
+            # 1) Agrupa por carta
+            # 2) Confirma que a carta possui o número exato de cores (COUNT DISTINCT)
+            # 3) Garante que todas as cores desejadas estão presentes (SUM CASE)
+            query = f'''
+                SELECT Cartas.id_carta, Cartas.nome, Cartas.tipo, Cartas.custo, Cartas.quantidade,
+                    GROUP_CONCAT(Cores.nome, ', ') as cores
+                FROM Cartas
+                JOIN cartas_cores ON Cartas.id_carta = cartas_cores.id_carta
+                JOIN Cores ON cartas_cores.id_cor = Cores.id_cor
+                GROUP BY Cartas.id_carta
+                HAVING COUNT(DISTINCT Cores.nome) = ?
+                AND SUM(CASE WHEN Cores.nome IN ({placeholders}) THEN 1 ELSE 0 END) = ?
+            '''
+
+            params = [num_cores] + cores_desejadas + [num_cores]
+            cursor.execute(query, params)
+            resultados = cursor.fetchall()
+
+        conn.close()
+        return resultados
+    
+    def buscar_cartas_por_nome(self, texto):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        # Executa uma função que busca cartas cujo nome contenha o texto fornecido (LIKE %texto%)
+        cursor.execute('''
+            SELECT
+                Cartas.id_carta,
+                Cartas.nome,
+                Cartas.tipo,
+                Cartas.custo,
+                Cartas.quantidade,
+                GROUP_CONCAT(Cores.nome, ', ') as cores
+            FROM Cartas
+            LEFT JOIN cartas_cores ON Cartas.id_carta = cartas_cores.id_carta
+            LEFT JOIN Cores ON cartas_cores.id_cor = Cores.id_cor
+            WHERE Cartas.nome LIKE ?
+            GROUP BY Cartas.id_carta
+        ''', ('%' + texto + '%',))  # %texto% para busca parcial no SQLite
+
+        resultados = cursor.fetchall() # pega todos os resultados da consulta
+        conn.close() # fecha a conexão com o banco
+        return resultados # retorna a lista de cartas encontradas
+    
+    # No Model:
+
+    def obter_carta_por_id(self, id_carta):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        cursor.execute('''
+            SELECT Cartas.id_carta, Cartas.nome, Cartas.tipo, Cartas.custo, Cartas.quantidade,
+                GROUP_CONCAT(Cores.nome, ', ') as cores
+            FROM Cartas
+            LEFT JOIN cartas_cores ON Cartas.id_carta = cartas_cores.id_carta
+            LEFT JOIN Cores ON cartas_cores.id_cor = Cores.id_cor
+            WHERE Cartas.id_carta = ?
+            GROUP BY Cartas.id_carta
+        ''', (id_carta,))
+
+        carta = cursor.fetchone()
+        conn.close()
+        return carta
+    
+    def atualizar_carta(self, id_carta, nome, tipo, custo, quantidade, cores_ids):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        # Atualiza os dados básicos da carta
+        cursor.execute('''
+            UPDATE Cartas 
+            SET nome = ?, tipo = ?, custo = ?, quantidade = ? 
+            WHERE id_carta = ?
+        ''', (nome, tipo, custo, quantidade, id_carta))
+
+        # Remove todas as cores vinculadas à carta
+        cursor.execute('DELETE FROM cartas_cores WHERE id_carta = ?', (id_carta,))
+
+        # Insere as cores novas
+        for id_cor in cores_ids:
+            cursor.execute('INSERT INTO cartas_cores (id_carta, id_cor) VALUES (?, ?)', (id_carta, id_cor))
+
+        conn.commit()
+        conn.close()
+
+

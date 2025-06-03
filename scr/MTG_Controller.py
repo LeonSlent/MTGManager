@@ -8,7 +8,6 @@ class Controller:
         #vincula as cores
         self.model.vincular_cores_a_carta(id_carta, cores_ids)
     
-
     def obter_cores_disponiveis(self):
         return self.model.buscar_cores()
     
@@ -17,3 +16,15 @@ class Controller:
 
     def excluir_carta(self, id_carta):
         self.model.excluir_carta(id_carta)
+
+    def obter_cartas_por_cores(self, cores_desejadas):
+        return self.model.buscar_cartas_por_cores(cores_desejadas)
+    
+    def buscar_cartas_por_nome(self, texto):     # Método do Controller que chama o Model para buscar cartas pelo nome
+        return self.model.buscar_cartas_por_nome(texto)
+
+    def obter_carta_por_id(self, id_carta):
+        return self.model.obter_carta_por_id(id_carta) #para edição
+    
+    def atualizar_carta(self, id_carta, nome, tipo, custo, quantidade, cores_ids):
+        self.model.atualizar_carta(id_carta, nome, tipo, custo, quantidade, cores_ids)
