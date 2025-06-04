@@ -73,7 +73,6 @@ class View:
     # Função para adicionar carta
     def exibir_cadastro(self):
     
-        cores_disponiveis = self.controller.obter_cores_disponiveis() #Buscando as cores disponíveis do banco via Controller
         self.cores_vars = {}  #Dicionário: chave = id_cor, valor = BooleanVar()
         self.root.resizable(False, False)  # proibe aumentar a tela
         self.root.title("MTG Manager - Cadastro")  # Titulo da tela
@@ -406,6 +405,8 @@ class View:
         cores_ids = [id_cor for (id_cor, var) in mapa_cores.values() if var.get()] #Faz uma varredura no checkbox para saber quais cores foram  selecionadas
         self.controller.adicionar_carta(nome, tipo, custo, quantidade, cores_ids)
 
+        self.confirmar_cadastro()
+
         # Limpar os campos após o cadastro
         self.entryNome.delete(0, tk.END)
         self.entryTipo.delete(0, tk.END)
@@ -413,6 +414,8 @@ class View:
         self.entryQuantidade.delete(0, tk.END)
         for _, var in mapa_cores.values():
             var.set(False)
+
+        
 
     def confirmar_exclusao(self, callback):
         # Cria uma nova janela acima da principal
@@ -566,7 +569,7 @@ class View:
         selecionado = self.tree.selection()
         if not selecionado:
             # Se nada estiver selecionado, mostra um alerta e sai da função
-            messagebox.showwarning("Atenção", "Selecione uma carta para editar.")
+            self.aviso_edição()
             return
 
         # Pega os valores da linha selecionada (tupla com os campos)
@@ -601,4 +604,106 @@ class View:
         self.controller.atualizar_carta(id_carta, nome, tipo, custo, quantidade, cores_ids)
 
         # Exibe mensagem de sucesso
-        messagebox.showinfo("Sucesso", "Carta atualizada com sucesso!")
+        self.confirmar_edicao()
+
+    def confirmar_cadastro(self):
+        janela = tk.Toplevel(self.root)
+        janela.title("Confirmar exclusão")
+        janela.geometry("300x150")
+        janela.resizable(False, False)
+        janela.grab_set()  # Impede interações fora da janela
+
+        # Centralizar em relação ao root
+        self.root.update_idletasks()
+        root_x = self.root.winfo_rootx()
+        root_y = self.root.winfo_rooty()
+        root_width = self.root.winfo_width()
+        root_height = self.root.winfo_height()
+
+        win_width = 300
+        win_height = 150
+        pos_x = root_x + (root_width - win_width) // 2
+        pos_y = root_y + (root_height - win_height) // 2
+        janela.geometry(f"+{pos_x}+{pos_y}")
+
+        # Texto
+        tk.Label(janela, text="Carta cadastrada", font=("Arial", 10)).pack(pady=20)
+
+        # Botões
+        frame_botoes = tk.Frame(janela)
+        frame_botoes.pack()
+
+    def confirmar_cadastro(self):
+        # Cria janela modal para avisar que cadastro foi realizado
+        janela = tk.Toplevel(self.root)
+        janela.title("Cadastro concluído")
+        janela.geometry("300x150")
+        janela.resizable(False, False)
+        janela.grab_set()  # impede interação com a janela principal
+
+        # Centraliza a janela em relação à principal
+        self.root.update_idletasks()
+        root_x = self.root.winfo_rootx()
+        root_y = self.root.winfo_rooty()
+        root_width = self.root.winfo_width()
+        root_height = self.root.winfo_height()
+        win_width, win_height = 300, 150
+        pos_x = root_x + (root_width - win_width) // 2
+        pos_y = root_y + (root_height - win_height) // 2
+        janela.geometry(f"+{pos_x}+{pos_y}")
+
+        # Mensagem de confirmação
+        tk.Label(janela, text="Carta cadastrada com sucesso!", font=("Arial", 12)).pack(pady=30)
+
+        # Botão OK que fecha a janela
+        tk.Button(janela, text="OK", width=10, command=janela.destroy).pack()
+
+    def confirmar_edicao(self):
+        # Cria janela modal para avisar que edição foi realizada
+        janela = tk.Toplevel(self.root)
+        janela.title("Edição concluída")
+        janela.geometry("300x150")
+        janela.resizable(False, False)
+        janela.grab_set()
+
+        # Centraliza a janela
+        self.root.update_idletasks()
+        root_x = self.root.winfo_rootx()
+        root_y = self.root.winfo_rooty()
+        root_width = self.root.winfo_width()
+        root_height = self.root.winfo_height()
+        win_width, win_height = 300, 150
+        pos_x = root_x + (root_width - win_width) // 2
+        pos_y = root_y + (root_height - win_height) // 2
+        janela.geometry(f"+{pos_x}+{pos_y}")
+
+        # Mensagem de confirmação
+        tk.Label(janela, text="Carta editada com sucesso!", font=("Arial", 12)).pack(pady=30)
+
+        # Botão OK que fecha a janela
+        tk.Button(janela, text="OK", width=10, command=janela.destroy).pack()
+
+    def aviso_edição(self):
+        # Cria janela modal para avisar que edição foi realizada
+        janela = tk.Toplevel(self.root)
+        janela.title("Selecione uma carta")
+        janela.geometry("300x150")
+        janela.resizable(False, False)
+        janela.grab_set()
+
+        # Centraliza a janela
+        self.root.update_idletasks()
+        root_x = self.root.winfo_rootx()
+        root_y = self.root.winfo_rooty()
+        root_width = self.root.winfo_width()
+        root_height = self.root.winfo_height()
+        win_width, win_height = 300, 150
+        pos_x = root_x + (root_width - win_width) // 2
+        pos_y = root_y + (root_height - win_height) // 2
+        janela.geometry(f"+{pos_x}+{pos_y}")
+
+        # Mensagem de confirmação
+        tk.Label(janela, text="Selecione uma carta!", font=("Arial", 12)).pack(pady=30)
+
+        # Botão OK que fecha a janela
+        tk.Button(janela, text="OK", width=10, command=janela.destroy).pack()
