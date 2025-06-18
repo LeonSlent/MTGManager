@@ -56,6 +56,8 @@ class Model:
         conn.close()
 
         return id_carta
+        
+    
 
     def buscar_cores(self):
         #Retorna uma lista de tuplas com os dados das cores (id_cor, nome)
@@ -222,5 +224,12 @@ class Model:
 
         conn.commit()
         conn.close()
+
+    def validar_entrada_numerica(self, char, campo):
+        #Verifica se a entrada é numérica. Retorna True se for numérico, caso contrário, False.
+        if char.isdigit():
+            return True
+        return False
+
 
 

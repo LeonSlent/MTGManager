@@ -28,3 +28,6 @@ class Controller:
     
     def atualizar_carta(self, id_carta, nome, tipo, custo, quantidade, cores_ids):
         self.model.atualizar_carta(id_carta, nome, tipo, custo, quantidade, cores_ids)
+
+    def validar_entrada_numerica(self, char, campo):
+        return self.model.validar_entrada_numerica(char, campo)

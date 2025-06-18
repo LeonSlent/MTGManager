@@ -2,7 +2,6 @@ import tkinter as tk
 from PIL import ImageTk, Image
 import sys
 from tkinter import ttk
-from tkinter import messagebox, Toplevel
 
 
 class View:
@@ -21,6 +20,9 @@ class View:
         if self.frame_atual:
             self.frame_atual.destroy()
         tela_nova()
+
+    def proibir_entrada_nao_numerica(self, char, campo): #chama o controller para bloquear qualquer coisa que não seja numero
+        return self.controller.validar_entrada_numerica(char, campo)
 
     # Função para exibir o menu
     def exibir_menu(self):
@@ -119,6 +121,8 @@ class View:
         self.entryTipo = tk.Entry(self.root, width=30, font=("Arial", 16, "bold"), bg="black", fg="white")
         self.entryTipo.place(relx=0.43, rely=0.3, anchor="n")
 
+        validate_cmd = self.root.register(self.proibir_entrada_nao_numerica)  # salva em uma variavel para reutilização
+
         # Criando custo de mana
         label_custo = tk.Label(self.root, text='Custo', font=("Arial", 16, "bold"), bg="#F5F5DC")
         label_custo.place(relx=0.22, rely=0.4, anchor="n")
@@ -126,6 +130,7 @@ class View:
         # Criando o campo de texto do custo de mana
         self.entryCusto = tk.Entry(self.root, width=30, font=("Arial", 16, "bold"), bg="black", fg="white")
         self.entryCusto.place(relx=0.43, rely=0.4, anchor="n")
+        self.entryCusto.config(validate="key", validatecommand=(validate_cmd, "%S", "custo"))
 
         # Criando quantidade
         label_quantidade = tk.Label(self.root, text='Quantidade', font=("Arial", 16, "bold"), bg="#F5F5DC")
@@ -134,6 +139,8 @@ class View:
         # Criando o campo de texto dda quantidade
         self.entryQuantidade = tk.Entry(self.root, width=30, font=("Arial", 16, "bold"), bg="black", fg="white")
         self.entryQuantidade.place(relx=0.43, rely=0.5, anchor="n")
+        self.entryQuantidade.config(validate="key", validatecommand=(validate_cmd, "%S", "quantidade"))
+
 
         # Criando cor de mana
         label_cor = tk.Label(self.root, text='Cor', font=("Arial", 15, "bold"), bg="#F5F5DC")
@@ -177,7 +184,7 @@ class View:
 
     # Função para editar carta
     def exibir_edit(self, carta):
-
+        validate_cmd = self.root.register(self.proibir_entrada_nao_numerica)  # salva em uma variavel para reutilização
         self.root.resizable(False, False)  # proibe aumentar a tela
         self.root.title("MTG Manager - Editar")  # Titulo da tela
         self.root.geometry("1200x720")  # Tamanho da tela
@@ -238,6 +245,8 @@ class View:
         # Criando o campo de texto do custo de mana
         self.entryCusto = tk.Entry(self.root, width=30, font=("Arial", 16, "bold"), bg="black", fg="white")
         self.entryCusto.place(relx=0.43, rely=0.4, anchor="n")
+        self.entryCusto.config(validate="key", validatecommand=(validate_cmd, "%S", "quantidade"))
+
 
         # Atualiza campo com valores
         self.entryCusto.delete(0, tk.END)
@@ -250,6 +259,7 @@ class View:
         # Criando o campo de texto dda quantidade
         self.entryQuantidade = tk.Entry(self.root, width=30, font=("Arial", 16, "bold"), bg="black", fg="white")
         self.entryQuantidade.place(relx=0.43, rely=0.5, anchor="n")
+        self.entryQuantidade.config(validate="key", validatecommand=(validate_cmd, "%S", "quantidade"))
 
         # Atualiza campo com valores
         self.entryQuantidade.delete(0, tk.END)
@@ -607,33 +617,6 @@ class View:
         self.confirmar_edicao()
 
     def confirmar_cadastro(self):
-        janela = tk.Toplevel(self.root)
-        janela.title("Confirmar exclusão")
-        janela.geometry("300x150")
-        janela.resizable(False, False)
-        janela.grab_set()  # Impede interações fora da janela
-
-        # Centralizar em relação ao root
-        self.root.update_idletasks()
-        root_x = self.root.winfo_rootx()
-        root_y = self.root.winfo_rooty()
-        root_width = self.root.winfo_width()
-        root_height = self.root.winfo_height()
-
-        win_width = 300
-        win_height = 150
-        pos_x = root_x + (root_width - win_width) // 2
-        pos_y = root_y + (root_height - win_height) // 2
-        janela.geometry(f"+{pos_x}+{pos_y}")
-
-        # Texto
-        tk.Label(janela, text="Carta cadastrada", font=("Arial", 10)).pack(pady=20)
-
-        # Botões
-        frame_botoes = tk.Frame(janela)
-        frame_botoes.pack()
-
-    def confirmar_cadastro(self):
         # Cria janela modal para avisar que cadastro foi realizado
         janela = tk.Toplevel(self.root)
         janela.title("Cadastro concluído")
@@ -684,7 +667,7 @@ class View:
         tk.Button(janela, text="OK", width=10, command=janela.destroy).pack()
 
     def aviso_edição(self):
-        # Cria janela modal para avisar que edição foi realizada
+        # Cria janela modal para avisar vc clicou em edição sem selecionar uma carta
         janela = tk.Toplevel(self.root)
         janela.title("Selecione uma carta")
         janela.geometry("300x150")
