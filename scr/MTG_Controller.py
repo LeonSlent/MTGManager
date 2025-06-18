@@ -3,10 +3,16 @@ class Controller:
         self.model = model
     
     def adicionar_carta(self, nome, tipo, custo, quantidade, cores_ids):
+        
         #Insere a carta e retorna o id
         id_carta = self.model.adicionar_carta(nome, tipo, custo, quantidade)
         #vincula as cores
-        self.model.vincular_cores_a_carta(id_carta, cores_ids)
+        ret = self.model.vincular_cores_a_carta(id_carta, cores_ids)
+
+        if id_carta == False or ret == False:
+            return False
+        else:
+            return True
     
     def obter_cores_disponiveis(self):
         return self.model.buscar_cores()

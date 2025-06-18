@@ -374,7 +374,7 @@ class View:
 
         cartas = self.controller.obter_cartas_com_cores()
         for id_carta, nome, tipo, custo, quantidade, cores in cartas:
-            self.tree.insert("", "end",values=(id_carta, nome, cores or "Nenhuma", tipo, custo, quantidade))
+            self.tree.insert("", "end",values=(id_carta, nome, cores, tipo, custo, quantidade))
 
             
         # Criando o botão voltar
@@ -395,12 +395,12 @@ class View:
 
     # Função para adicionar cartas
     def adicionar_carta(self, ):
-
+        
         # Pega os valores da carta
         nome = self.entryNome.get()
         tipo = self.entryTipo.get()
         custo = self.entryCusto.get()
-        quantidade = int(self.entryQuantidade.get())
+        quantidade = (self.entryQuantidade.get())
 
         # Dicionario que vincula as cores as suas respectivas chaves no banco de dados
         mapa_cores = {
@@ -413,16 +413,19 @@ class View:
             }
         
         cores_ids = [id_cor for (id_cor, var) in mapa_cores.values() if var.get()] #Faz uma varredura no checkbox para saber quais cores foram  selecionadas
-        self.controller.adicionar_carta(nome, tipo, custo, quantidade, cores_ids)
+        sucesso = self.controller.adicionar_carta(nome, tipo, custo, quantidade, cores_ids)
+        if sucesso:
+            self.confirmar_cadastro()
 
-        self.confirmar_cadastro()
+        else:
+            self.aviso_de_entrada()
 
         # Limpar os campos após o cadastro
         self.entryNome.delete(0, tk.END)
         self.entryTipo.delete(0, tk.END)
         self.entryCusto.delete(0, tk.END)
         self.entryQuantidade.delete(0, tk.END)
-        for _, var in mapa_cores.values():
+        for _, var in mapa_cores.values(): #Passa por todas as cores e limpa todas 
             var.set(False)
 
         
@@ -517,16 +520,16 @@ class View:
         "Simic": ["Azul", "Verde"],
 
         # Três cores (shards e wedges)
-        "Abzan": ["Branco", "Preto", "Verde"],      # Wedge (white, black, green)
-        "Bant": ["Branco", "Azul", "Verde"],       # Wedge (white, blue, green)
-        "Esper": ["Branco", "Azul", "Preto"],      # Wedge (white, blue, black)
-        "Grixis": ["Azul", "Preto", "Vermelho"],   # Shard (blue, black, red)
-        "Jeskai": ["Branco", "Azul", "Vermelho"],  # Wedge (white, blue, red)
-        "Jund": ["Preto", "Vermelho", "Verde"],    # Shard (black, red, green)
-        "Mardu": ["Branco", "Preto", "Vermelho"],  # Wedge (white, black, red)
-        "Naya": ["Branco", "Vermelho", "Verde"],   # Shard (white, red, green)
-        "Sultai": ["Azul", "Preto", "Verde"],      # Wedge (blue, black, green)
-        "Temur": ["Azul", "Vermelho", "Verde"],    # Shard (blue, red, green)
+        "Abzan": ["Branco", "Preto", "Verde"],      # Wedge
+        "Bant": ["Branco", "Azul", "Verde"],       # Wedge 
+        "Esper": ["Branco", "Azul", "Preto"],      # Wedge 
+        "Grixis": ["Azul", "Preto", "Vermelho"],   # Shard 
+        "Jeskai": ["Branco", "Azul", "Vermelho"],  # Wedge 
+        "Jund": ["Preto", "Vermelho", "Verde"],    # Shard 
+        "Mardu": ["Branco", "Preto", "Vermelho"],  # Wedge 
+        "Naya": ["Branco", "Vermelho", "Verde"],   # Shard 
+        "Sultai": ["Azul", "Preto", "Verde"],      # Wedge 
+        "Temur": ["Azul", "Vermelho", "Verde"],    # Shard 
 
         # Quatro cores (4-color combos)
         "Yore": ["Azul", "Preto", "Vermelho", "Verde"],    # Sem branco
@@ -555,7 +558,7 @@ class View:
 
         # Insere as cartas filtradas na treeview
         for id_carta, nome, tipo, custo, quantidade, cores in cartas_filtradas:
-            self.tree.insert("", "end", values=(id_carta, nome, cores or "Nenhuma", tipo, custo, quantidade))
+            self.tree.insert("", "end", values=(id_carta, nome, cores, tipo, custo, quantidade))
 
     def limpar_filtros(self):
         # Limpa a seleção do combobox
@@ -572,7 +575,7 @@ class View:
     def atualizar_treeview(self, cartas):
         self.tree.delete(*self.tree.get_children())  # limpa todos os itens da tabela/treeview
         for id_carta, nome, tipo, custo, quantidade, cores in cartas:
-           self.tree.insert("", "end", values=(id_carta, nome, cores or "Nenhuma", tipo, custo, quantidade)) # insere cada carta filtrada no treeview, preenchendo as colunas
+           self.tree.insert("", "end", values=(id_carta, nome, cores, tipo, custo, quantidade)) # insere cada carta filtrada no treeview, preenchendo as colunas
 
     def editar_carta_selecionada(self):
         # Pega o item selecionado na Treeview
@@ -596,8 +599,8 @@ class View:
         # Pega os valores atualizados dos campos de entrada
         nome = self.entryNome.get()
         tipo = self.entryTipo.get()
-        custo = int(self.entryCusto.get())
-        quantidade = int(self.entryQuantidade.get())
+        custo = (self.entryCusto.get())
+        quantidade = (self.entryQuantidade.get())
         
         # Mapeamento das cores selecionadas, igual no cadastro
         mapa_cores = {
@@ -637,6 +640,31 @@ class View:
 
         # Mensagem de confirmação
         tk.Label(janela, text="Carta cadastrada com sucesso!", font=("Arial", 12)).pack(pady=30)
+
+        # Botão OK que fecha a janela
+        tk.Button(janela, text="OK", width=10, command=janela.destroy).pack()
+
+    def aviso_de_entrada(self):
+        # Cria janela modal para avisar que cadastro foi realizado
+        janela = tk.Toplevel(self.root)
+        janela.title("Erro ao adicionar carta")
+        janela.geometry("300x150")
+        janela.resizable(False, False)
+        janela.grab_set()  # impede interação com a janela principal
+
+        # Centraliza a janela em relação à principal
+        self.root.update_idletasks()
+        root_x = self.root.winfo_rootx()
+        root_y = self.root.winfo_rooty()
+        root_width = self.root.winfo_width()
+        root_height = self.root.winfo_height()
+        win_width, win_height = 300, 150
+        pos_x = root_x + (root_width - win_width) // 2
+        pos_y = root_y + (root_height - win_height) // 2
+        janela.geometry(f"+{pos_x}+{pos_y}")
+
+        # Mensagem de confirmação
+        tk.Label(janela, text="Todos os campos devem ser preenchidos", font=("Arial", 12)).pack(pady=30)
 
         # Botão OK que fecha a janela
         tk.Button(janela, text="OK", width=10, command=janela.destroy).pack()

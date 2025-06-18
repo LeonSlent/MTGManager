@@ -46,17 +46,20 @@ class Model:
 
     def adicionar_carta(self, nome, tipo, custo, quantidade):
         # Insere uma nova carta na tabela cartas
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        
-        cursor.execute('''
-            INSERT INTO Cartas (nome, tipo, custo, quantidade) VALUES (?, ?, ?, ?)''', (nome, tipo, custo, quantidade))
-        id_carta = cursor.lastrowid #O lastrowid pega o id da nova carta que foi auto incrementado
-        conn.commit()
-        conn.close()
 
-        return id_carta
-        
+        if not nome or not tipo or not custo or not quantidade:
+            return False
+        else:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                INSERT INTO Cartas (nome, tipo, custo, quantidade) VALUES (?, ?, ?, ?)''', (nome, tipo, custo, quantidade))
+            id_carta = cursor.lastrowid #O lastrowid pega o id da nova carta que foi auto incrementado
+            conn.commit()
+            conn.close()
+
+            return id_carta
     
 
     def buscar_cores(self):
@@ -75,13 +78,17 @@ class Model:
 
         #Percorre a lista de IDs das cores e para cada cor marcada, insere uma linha na tabela cartas_cores
         for id_cor in lista_id_cores:
-            cursor.execute(
-                "INSERT INTO cartas_cores (id_carta, id_cor) VALUES (?, ?)",
-                (id_carta, id_cor)
-            )
+            
+            if not id_cor:
+                return False
+            else:
+                cursor.execute(
+                    "INSERT INTO cartas_cores (id_carta, id_cor) VALUES (?, ?)",
+                    (id_carta, id_cor)
+                )
 
-        conn.commit()
-        conn.close()
+                conn.commit()
+                conn.close()
 
     #Busca as cartas para serem mostradas na minha lista
     def buscar_cartas_com_cores(self):
